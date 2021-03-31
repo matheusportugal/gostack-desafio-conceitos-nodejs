@@ -15,9 +15,9 @@ app.get("/repositories", (request, response) => {
 });
 
 app.post("/repositories", (request, response) => {
-  const { title, url, techs, likes } = request.body;
+  const { title, url, techs } = request.body;
 
-  const repository = { id: uuid(), title, url, techs, likes };
+  const repository = { id: uuid(), title, url, techs, likes: 0 };
   repositories.push(repository);
 
   return response.json(repository);
@@ -25,11 +25,11 @@ app.post("/repositories", (request, response) => {
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
-    const { title, url, techs, likes } = request.body;
+    const { title, url, techs } = request.body;
 
     const repositoryId = repositories.findIndex(repo => repo.id === id);
     
-    if (repositoryId < 0) {
+    if (repositoryId === -1) {
         return res.status(400).json({ error: 'Repository not found.' });
     }
 
@@ -38,7 +38,7 @@ app.put("/repositories/:id", (request, response) => {
         title,
         url,
         techs,
-        likes
+        likes: repositories[repositoryId].likes
     };
 
     repositories[repositoryId] = repository;
@@ -51,8 +51,7 @@ app.delete("/repositories/:id", (request, response) => {
 
   const repositoryId = repositories.findIndex(repo => repo.id === id);
   
-  if (repositoryId < 0) {
-      console.log('🤪 aqui')
+  if (repositoryId === -1) {
       return response.status(400).json({ error: 'Repository not found.' });
   }
 
@@ -62,18 +61,16 @@ app.delete("/repositories/:id", (request, response) => {
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  const { likes } = request.body;
+  const { id } = request.params;
 
-  console.log(likes);
+  const repositoryId = repositories.findIndex(repo => repo.id === id);
+  if (repositoryId === -1) {
+    return response.status(400).json({ error: 'Repository not found.' });
+  }
 
-  likes = likes + 1;
+  repositories[repositoryId].likes++;
 
-  console.log(likes);
-
-  const repository = { id: uuid(), likes };
-  repositories.push(repository);
-
-  return response.json(repository);
+  return response.json(repositories[repositoryId]);
 });
 
 module.exports = app;
